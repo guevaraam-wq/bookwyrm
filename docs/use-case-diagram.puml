@@ -1,0 +1,34 @@
+@startuml
+left to right direction
+
+actor "Logged-in Reader" as Reader
+actor "External Book\nData Service" as BookData
+actor "Follower of\nthe Reader" as Follower
+
+rectangle "BookWyrm" {
+    usecase "Record Finishing\na Book" as UC1
+    usecase "Publish a\nBook Review" as UC2
+    usecase "Import Reading\nHistory" as UC3
+}
+
+Reader --> UC1
+Reader --> UC2
+Reader --> UC3
+
+BookData --> UC3 : provides book data
+
+Follower ..> UC1 : interested in shared update
+Follower ..> UC2 : interested in published review
+
+note bottom of UC1
+Follower interest applies when
+the reader posts the completion
+update to the feed.
+end note
+
+note bottom of UC3
+External lookup may be used when
+a book cannot be resolved locally.
+end note
+
+@enduml
