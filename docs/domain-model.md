@@ -28,6 +28,12 @@ classDiagram
         startDate
         finishDate
     }
+    class ReadingImport{
+        status
+    }
+    class Notification{
+        message
+    }
 
     Reader "1" -- "0..*" Shelf : owns
     Shelf "0..*" -- "0..*" Book : contains
@@ -36,3 +42,6 @@ classDiagram
     Author "0..*" -- "0..*" Book : writes
     Reader "1" -- "0..*" ReadingActivity : has
     ReadingActivity "0..*" -- "1" Book : involves
+        Reader "1" -- "0..*" ReadingImport : starts
+    ReadingImport "0..*" -- "0..*" Book : includes
+    Reader "1" -- "0..*" Notification : receives
