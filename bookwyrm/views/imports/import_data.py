@@ -17,6 +17,7 @@ from django.views import View
 
 from bookwyrm import forms, models
 from bookwyrm.importers import BookwyrmImporter
+from bookwyrm.importers.importer import Importer
 from bookwyrm.importers.importer_factory import ServiceImporterCreator
 from bookwyrm.models.bookwyrm_import_job import BookwyrmImportJob
 from bookwyrm.settings import PAGE_LENGTH
@@ -51,17 +52,11 @@ class Import(View):
             data["recent_avg_minutes"] = seconds / 60
 
         site_settings = models.SiteSettings.get()
-        time_range = timezone.now() - datetime.timedelta(
-            days=site_settings.import_limit_reset
-        )
-        import_jobs = models.ImportJob.objects.filter(
-            user=request.user, created_date__gte=time_range
-        )
-
-        imported_books = sum([job.successful_item_count for job in import_jobs])
+        importer = Importer()
+        _, allowed_imports = importer.get_import_limit(request.user)
         data["import_size_limit"] = site_settings.import_size_limit
         data["import_limit_reset"] = site_settings.import_limit_reset
-        data["allowed_imports"] = site_settings.import_size_limit - imported_books
+        data["allowed_imports"] = allowed_imports
 
         return TemplateResponse(request, "import/import.html", data)
 
