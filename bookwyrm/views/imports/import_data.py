@@ -16,16 +16,8 @@ from django.utils.decorators import method_decorator
 from django.views import View
 
 from bookwyrm import forms, models
-from bookwyrm.importers import (
-    BookwyrmImporter,
-    BookwyrmBooksImporter,
-    CalibreImporter,
-    LibrarythingImporter,
-    GoodreadsImporter,
-    StorygraphImporter,
-    OpenLibraryImporter,
-    OpenReadsImporter,
-)
+from bookwyrm.importers import BookwyrmImporter
+from bookwyrm.importers.importer_factory import ServiceImporterCreator
 from bookwyrm.models.bookwyrm_import_job import BookwyrmImportJob
 from bookwyrm.settings import PAGE_LENGTH
 from bookwyrm.utils.cache import get_or_set
@@ -89,21 +81,7 @@ class Import(View):
         source = request.POST.get("source")
         shelf_override = request.POST.get("shelf_override") or None
 
-        if source == "BookWyrm":
-            importer = BookwyrmBooksImporter()
-        elif source == "LibraryThing":
-            importer = LibrarythingImporter()
-        elif source == "Storygraph":
-            importer = StorygraphImporter()
-        elif source == "OpenLibrary":
-            importer = OpenLibraryImporter()
-        elif source == "OpenReads":
-            importer = OpenReadsImporter()
-        elif source == "Calibre":
-            importer = CalibreImporter()
-        else:
-            # Default : Goodreads
-            importer = GoodreadsImporter()
+        importer = ServiceImporterCreator(source).create_importer()
 
         try:
             job = importer.create_job(
