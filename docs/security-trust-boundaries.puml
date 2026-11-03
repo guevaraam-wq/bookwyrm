@@ -1,0 +1,15 @@
+@startuml
+title BookWyrm Trust Boundary Diagram
+
+rectangle "Web Browser" as Browser
+rectangle "BookWyrm Application" as App
+database "BookWyrm Database" as DB
+
+Browser --> App : 1. HTTP request - Django validates input
+App --> DB : 2. Validate database access
+rectangle "Authentication and Authorization" as Auth
+rectangle "External Book Data Service" as External
+App --> Auth : 3. Check session and user permissions
+App --> External : 4. Request book data
+External --> App : 5. Validate returned data
+@enduml
