@@ -4,7 +4,9 @@ import time
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
@@ -36,6 +38,12 @@ class Login(View):
         """authentication action"""
         if request.user.is_authenticated:
             return redirect("/")
+        cache_key = f"login-failures:{request.META.get('REMOTE_ADDR', '')}"
+        if cache.get(cache_key, 0) >= 5:
+            return HttpResponse(
+                "Too many login attempts. Please try again later.", status=429
+            )
+
         login_form = forms.LoginForm(request.POST)
 
         # who do we think is trying to log in
@@ -46,6 +54,7 @@ class Login(View):
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
+            cache.delete(cache_key)
             # do they need to reset their password?
             if user.force_password_reset:
                 request.session["force_reset_password_user"] = user.username
@@ -87,6 +96,14 @@ class Login(View):
                 return set_language(user, redirect("prompt-2fa"))
 
             return set_language(user, redirect("/"))
+
+        # Keep a five-minute window starting with the first failed attempt.
+        if not cache.add(cache_key, 1, timeout=300):
+            try:
+                cache.incr(cache_key)
+            except ValueError:
+                # The window may have expired during authentication.
+                cache.add(cache_key, 1, timeout=300)
 
         user_attempt = models.User.objects.filter(
             username=username, is_active=False

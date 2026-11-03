@@ -6,8 +6,9 @@ from unittest.mock import patch
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.middleware import SessionMiddleware
+from django.core.cache import cache
 from django.template.response import TemplateResponse
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.test.client import RequestFactory
 
 from bookwyrm import forms, models, views
@@ -16,6 +17,14 @@ from bookwyrm.tests.validate_html import validate_html
 SessionStore = import_module(settings.SESSION_ENGINE).SessionStore
 
 
+@override_settings(
+    CACHES={
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "login-rate-limit-tests",
+        }
+    }
+)
 @patch("bookwyrm.suggested_users.rerank_suggestions_task.delay")
 @patch("bookwyrm.activitystreams.populate_stream_task.delay")
 class LoginViews(TestCase):
@@ -58,6 +67,8 @@ class LoginViews(TestCase):
 
     def setUp(self):
         """individual test setup"""
+        cache.clear()
+        self.addCleanup(cache.clear)
         self.factory = RequestFactory()
         self.anonymous_user = AnonymousUser
         self.anonymous_user.is_authenticated = False
@@ -154,7 +165,101 @@ class LoginViews(TestCase):
             "Username or password are incorrect",
         )
 
-    def test_login_post_no_2fa_set(self, *_):
+    def test_login_rate_limit(self, *_):
+        """Block login attempts after five failed passwords."""
+        view = views.Login.as_view()
+
+        for _ in range(5):
+            request = self.factory.post(
+                "",
+                {
+                    "localname": "mouse",
+                    "password": "wrongpassword",
+                },
+            )
+            request.user = self.anonymous_user
+
+            result = view(request)
+            self.assertEqual(result.status_code, 200)
+
+        # The sixth attempt should be blocked,
+        # even when the password is correct.
+        request = self.factory.post(
+            "",
+            {
+                "localname": "mouse",
+                "password": "password",
+            },
+        )
+        request.user = self.anonymous_user
+
+        middleware = SessionMiddleware(lambda x: None)
+        middleware.process_request(request)
+        request.session.save()
+
+        with patch("bookwyrm.views.landing.login.login"):
+            result = view(request)
+
+        self.assertEqual(result.status_code, 429)
+    def login_attempt(self, password="wrong", ip_address="192.0.2.1", **extra):
+        """Submit credentials from a particular client address."""
+        request = self.factory.post(
+            "",
+            {"localname": "mouse", "password": password},
+            REMOTE_ADDR=ip_address,
+            **extra,
+        )
+        request.user = self.anonymous_user
+        SessionMiddleware(lambda x: None).process_request(request)
+        request.session.save()
+        return views.Login.as_view()(request)
+
+    def test_login_rate_limit_blocks_failed_attempts(self, *_):
+        """Changing an untrusted forwarded address cannot bypass blocking."""
+        for _ in range(5):
+            self.assertEqual(self.login_attempt().status_code, 200)
+        with patch("bookwyrm.views.landing.login.authenticate") as authenticate:
+            result = self.login_attempt(HTTP_X_FORWARDED_FOR="192.0.2.99")
+        self.assertEqual(result.status_code, 429)
+        authenticate.assert_not_called()
+
+    def test_login_rate_limit_different_ips(self, *_):
+        """A blocked address does not prevent another address logging in."""
+        for _ in range(5):
+            self.login_attempt()
+        self.assertEqual(
+            self.login_attempt(password="password", ip_address="192.0.2.2").status_code,
+            302,
+        )
+        self.assertEqual(self.login_attempt().status_code, 429)
+
+    def test_login_rate_limit_success_resets_counter(self, *_):
+        """A successful authentication clears earlier failures."""
+        for _ in range(4):
+            self.login_attempt()
+        self.assertEqual(self.login_attempt(password="password").status_code, 302)
+        for _ in range(5):
+            self.assertEqual(self.login_attempt().status_code, 200)
+        self.assertEqual(self.login_attempt().status_code, 429)
+
+    def test_login_rate_limit_expires(self, *_):
+        """Failures expire five minutes after the first failed attempt."""
+        with patch("time.time", return_value=1000):
+            for _ in range(5):
+                self.login_attempt()
+        with patch("time.time", return_value=1299):
+            self.assertEqual(self.login_attempt(password="password").status_code, 429)
+        with patch("time.time", return_value=1301):
+            self.assertEqual(self.login_attempt(password="password").status_code, 302)
+
+    def test_login_force_password_reset(self, *_):
+        """Successful authentication preserves the password reset redirect."""
+        self.local_user.force_password_reset = True
+        self.local_user.save(broadcast=False, update_fields=["force_password_reset"])
+        result = self.login_attempt(password="password")
+        self.assertEqual(result.url, "/force-password-reset")
+
+    def test_login_post_with_2fa_unset(self, *_):
         """test user with 2FA null value is redirected to 2FA prompt page"""
         view = views.Login.as_view()
         form = forms.LoginForm()
