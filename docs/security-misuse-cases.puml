@@ -1,0 +1,38 @@
+
+@startuml
+left to right direction
+
+actor "Reader" as Reader
+actor "Attacker" as Attacker
+
+rectangle "BookWyrm" {
+  usecase "Log In" as Login
+  usecase "Write Book Review" as Review
+  usecase "Import Reading History" as Import
+
+  usecase "Steal User Session" as Steal
+  usecase "Modify Another User's Review" as Modify
+  usecase "Overload Import System" as Overload
+
+  usecase "Session Authentication" as Auth
+  usecase "Review Ownership Check" as Ownership
+  usecase "Import Size Limits" as Limits
+}
+
+Reader --> Login
+Reader --> Review
+Reader --> Import
+
+Attacker --> Steal
+Attacker --> Modify
+Attacker --> Overload
+
+Steal ..> Login : <<threatens>>
+Modify ..> Review : <<threatens>>
+Overload ..> Import : <<threatens>>
+
+Auth ..> Steal : <<mitigates>>
+Ownership ..> Modify : <<mitigates>>
+Limits ..> Overload : <<mitigates>>
+
+@enduml
