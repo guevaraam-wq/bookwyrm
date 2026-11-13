@@ -15,7 +15,7 @@ Coverage is execution evidence, not proof that behavior is correct.
 Open `docs/a7-red-tests.txt` and the state-based Redis regression test. Show an
 assertion that the store retains exactly the highest-ranked entries up to capacity.
 Explain that Redis rank endpoints are inclusive: trimming through `-N` removes
-the Nth-from-last entry too, leaving only N−1 entries. At capacity 1, it removes
+the Nth-from-last entry too, leaving at most N−1 entries. At capacity 1, it removes
 the sole entry. Show the A7-Red commit before the production fix.
 
 ## 0:50–1:15 — GREEN and refactor

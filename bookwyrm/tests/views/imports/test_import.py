@@ -317,7 +317,7 @@ class ImportViews(TestCase):
             views.ImportStatus.as_view()(request, 0)
 
     def test_retry_item_get_does_not_schedule_task(self):
-        """Retrying is a mutation and requires POST, even for an owner."""
+        """An authenticated GET is rejected without scheduling a retry task."""
         request = self.factory.get("")
         request.user = self.local_user
         with patch("bookwyrm.models.import_job.import_item_task.delay") as task:
