@@ -30,7 +30,7 @@ class RedisStore(ABC):
             pipeline.zadd(store, value)
             # trim the store
             if self.max_length:
-                pipeline.zremrangebyrank(store, 0, -1 * self.max_length)
+                pipeline.zremrangebyrank(store, 0, -1 * self.max_length - 1)
         if not execute:
             return pipeline
         # and go!
@@ -55,7 +55,7 @@ class RedisStore(ABC):
         for obj in max_length_objs:
             pipeline.zadd(store, self.get_value(obj))
         if max_length_objs and self.max_length:
-            pipeline.zremrangebyrank(store, 0, -1 * self.max_length)
+            pipeline.zremrangebyrank(store, 0, -1 * self.max_length - 1)
         pipeline.execute()
 
     def bulk_remove_objects_from_store(self, objs: QuerySet[Any], store: str) -> None:
@@ -79,7 +79,7 @@ class RedisStore(ABC):
 
         # only trim the store if objects were added
         if queryset.exists() and self.max_length:
-            pipeline.zremrangebyrank(store, 0, -1 * self.max_length)
+            pipeline.zremrangebyrank(store, 0, -1 * self.max_length - 1)
         pipeline.execute()
 
     @abstractmethod

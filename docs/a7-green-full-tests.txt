@@ -1,0 +1,370 @@
++ case "$CMD" in
++ rundev pytest --no-cov-on-fail -n 3 --cov-config=pyproject.toml --cov-report=term --cov-report=xml:docs/a7-green-coverage.xml
++ docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env --env-file .env.dev -f docker-compose.yml -f docker-compose.dev.yml --env-file .env --env-file .env.dev run -e DEBUG=true --rm web pytest --no-cov-on-fail -n 3 --cov-config=pyproject.toml --cov-report=term --cov-report=xml:docs/a7-green-coverage.xml
+ Container dev-wyrm-db-1 Running 
+ Container dev-wyrm-redis_activity-1 Running 
+ Container dev-wyrm-db-1 Waiting 
+ Container dev-wyrm-db-1 Healthy 
+ Container dev-wyrm-web-run-a07a7a7cdfc2 Creating 
+ Container dev-wyrm-web-run-a07a7a7cdfc2 Created 
+============================= test session starts ==============================
+platform linux -- Python 3.11.16, pytest-9.0.3, pluggy-1.6.0
+django: version: 5.2.16, settings: bookwyrm.settings (from ini)
+rootdir: /app
+configfile: pytest.ini (WARNING: ignoring pytest config in pyproject.toml!)
+testpaths: bookwyrm/tests
+plugins: django-4.8.0, env-1.1.3, cov-5.0.0, xdist-3.5.0
+created: 3/3 workers
+3 workers [1396 items]
+
+........................................................................ [  5%]
+........................................................................ [ 10%]
+........................................................................ [ 15%]
+........................................................................ [ 20%]
+......................................x................................. [ 25%]
+........................................................................ [ 30%]
+........................................................................ [ 36%]
+........................................................................ [ 41%]
+........................................................................ [ 46%]
+........................................................................ [ 51%]
+........................................................................ [ 56%]
+........................................................................ [ 61%]
+........................................................................ [ 67%]
+........................................................................ [ 72%]
+........................................................................ [ 77%]
+........................................................................ [ 82%]
+........................................................................ [ 87%]
+........................................................................ [ 92%]
+........................................................................ [ 97%]
+............................                                             [100%]
+=============================== warnings summary ===============================
+../venv/lib/python3.11/site-packages/django/db/models/fields/__init__.py:1148
+../venv/lib/python3.11/site-packages/django/db/models/fields/__init__.py:1148
+../venv/lib/python3.11/site-packages/django/db/models/fields/__init__.py:1148
+  /venv/lib/python3.11/site-packages/django/db/models/fields/__init__.py:1148: RemovedInDjango60Warning: The default scheme will be changed from 'http' to 'https' in Django 6.0. Pass the forms.URLField.assume_scheme argument to silence this warning, or set the FORMS_URLFIELD_ASSUME_HTTPS transitional setting to True to opt into using 'https' as the new default scheme.
+    return form_class(**defaults)
+
+bookwyrm/tests/models/test_activitypub_mixin.py::ActivitypubMixins::test_get_recipients_public_user_object_with_mention
+  /usr/local/lib/python3.11/copy.py:138: RuntimeWarning: coroutine 'async_broadcast' was never awaited
+    y = memo.get(d, _nil)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+bookwyrm/tests/models/test_fields.py::ModelFields::test_image_field_from_activity
+bookwyrm/tests/models/test_fields.py::ModelFields::test_image_field_set_field_from_activity
+bookwyrm/tests/models/test_fields.py::ModelFields::test_image_field_set_field_from_activity_no_overwrite_no_cover
+bookwyrm/tests/models/test_fields.py::ModelFields::test_image_field_set_field_from_activity_with_overwrite_with_cover
+  /venv/lib/python3.11/site-packages/responses/__init__.py:607: DeprecationWarning: stream argument is deprecated. Use stream parameter in request directly
+    warn(
+
+bookwyrm/tests/models/test_base_model.py::BaseModel::test_object_visible_to_user_blocked
+bookwyrm/tests/models/test_base_model.py::BaseModel::test_object_visible_to_user_follower
+bookwyrm/tests/models/test_base_model.py::BaseModel::test_remote_id
+bookwyrm/tests/models/test_base_model.py::BaseModel::test_remote_id_with_user
+bookwyrm/tests/models/test_base_model.py::BaseModel::test_set_remote_id
+  /venv/lib/python3.11/site-packages/django/db/models/base.py:368: RuntimeWarning: Model 'bookwyrm.bookwyrmtestmodel' was already registered. Reloading models is not advised as it can lead to inconsistencies, most notably with related models.
+    new_class._meta.apps.register_model(new_class._meta.app_label, new_class)
+
+bookwyrm/tests/models/test_status_model.py: 10 warnings
+bookwyrm/tests/views/test_annual_summary.py: 1 warning
+  /venv/lib/python3.11/site-packages/django/utils/translation/trans_real.py:123: DeprecationWarning: Plural value must be an integer, got float
+    tmsg = cat.get((msgid, plural(num)))
+
+bookwyrm/tests/test_preview_images.py::PreviewImages::test_generate_preview_image
+bookwyrm/tests/test_preview_images.py::PreviewImages::test_site_preview
+bookwyrm/tests/test_preview_images.py::PreviewImages::test_user_preview
+  /venv/lib/python3.11/site-packages/colorthief.py:65: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
+    pixels = image.getdata()
+
+bookwyrm/tests/views/lists/test_lists.py::ListViews::test_lists_page
+  /app/bookwyrm/views/list/lists.py:29: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'bookwyrm.models.list.List'> QuerySet.
+    paginated = Paginator(lists, 12)
+
+bookwyrm/tests/views/lists/test_lists.py::ListViews::test_user_lists_page
+bookwyrm/tests/views/lists/test_lists.py::ListViews::test_user_lists_page_logged_out
+  /app/bookwyrm/views/list/lists.py:88: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'bookwyrm.models.list.List'> QuerySet.
+    paginated = Paginator(lists, 12)
+
+bookwyrm/tests/views/test_rss_feed.py::RssFeedView::test_rss_review
+bookwyrm/tests/views/test_rss_feed.py::RssFeedView::test_rss_review
+bookwyrm/tests/views/test_rss_feed.py::RssFeedView::test_rss_review
+bookwyrm/tests/views/test_rss_feed.py::RssFeedView::test_rss_review_only
+bookwyrm/tests/views/test_rss_feed.py::RssFeedView::test_rss_review_only
+bookwyrm/tests/views/test_rss_feed.py::RssFeedView::test_rss_review_only
+bookwyrm/tests/views/test_status.py::StatusViews::test_create_status_rating
+  /venv/lib/python3.11/site-packages/django/utils/translation/trans_real.py:123: DeprecationWarning: Plural value must be an integer, got Decimal
+    tmsg = cat.get((msgid, plural(num)))
+
+bookwyrm/tests/views/test_user.py::UserViews::test_suggestions_page
+bookwyrm/tests/views/test_user.py::UserViews::test_suggestions_page_empty
+bookwyrm/tests/views/test_user.py::UserViews::test_suggestions_page_is_not_self
+  /app/bookwyrm/views/suggestion_list.py:122: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'bookwyrm.models.list.SuggestionListItem'> QuerySet.
+    paginated = Paginator(suggestions, 12)
+
+bookwyrm/tests/views/test_isbn.py::IsbnViews::test_isbn_html_response
+  /app/bookwyrm/views/isbn.py:28: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'bookwyrm.models.book.Edition'> InheritanceQuerySet.
+    paginated = Paginator(book_results, PAGE_LENGTH)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+
+---------- coverage: platform linux, python 3.11.16-final-0 ----------
+Name                                                     Stmts   Miss  Cover
+----------------------------------------------------------------------------
+bookwyrm/__init__.py                                         0      0   100%
+bookwyrm/activitypub/__init__.py                            26      0   100%
+bookwyrm/activitypub/base_activity.py                      244     15    94%
+bookwyrm/activitypub/book.py                                67      0   100%
+bookwyrm/activitypub/image.py                               11      0   100%
+bookwyrm/activitypub/note.py                                77      3    96%
+bookwyrm/activitypub/ordered_collection.py                  56      0   100%
+bookwyrm/activitypub/person.py                              31      0   100%
+bookwyrm/activitypub/response.py                             7      0   100%
+bookwyrm/activitypub/series.py                              16      0   100%
+bookwyrm/activitypub/verbs.py                              153     14    91%
+bookwyrm/activitystreams.py                                312     68    78%
+bookwyrm/admin.py                                            5      0   100%
+bookwyrm/apps.py                                            33     20    39%
+bookwyrm/book_search.py                                     78      3    96%
+bookwyrm/connectors/__init__.py                              3      0   100%
+bookwyrm/connectors/abstract_connector.py                  323     75    77%
+bookwyrm/connectors/bookwyrm_connector.py                   22      1    95%
+bookwyrm/connectors/connector_manager.py                   103     16    84%
+bookwyrm/connectors/finna.py                               182     36    80%
+bookwyrm/connectors/format_mappings.py                       1      0   100%
+bookwyrm/connectors/inventaire.py                          161     40    75%
+bookwyrm/connectors/libris.py                              155     32    79%
+bookwyrm/connectors/openlibrary.py                         175     38    78%
+bookwyrm/connectors/openlibrary_languages.py                 1      0   100%
+bookwyrm/connectors/settings.py                              1      0   100%
+bookwyrm/context_processors.py                              12      0   100%
+bookwyrm/decorators.py                                       8      0   100%
+bookwyrm/emailing.py                                        45      4    91%
+bookwyrm/forms/__init__.py                                  11      0   100%
+bookwyrm/forms/admin.py                                     85      8    91%
+bookwyrm/forms/author.py                                     9      0   100%
+bookwyrm/forms/books.py                                     34      0   100%
+bookwyrm/forms/custom_form.py                               25      0   100%
+bookwyrm/forms/edit_user.py                                 78      7    91%
+bookwyrm/forms/forms.py                                     48      3    94%
+bookwyrm/forms/groups.py                                     6      0   100%
+bookwyrm/forms/landing.py                                   95      5    95%
+bookwyrm/forms/links.py                                     28      2    93%
+bookwyrm/forms/lists.py                                     24      0   100%
+bookwyrm/forms/status.py                                    30      0   100%
+bookwyrm/forms/user_admin.py                                 6      0   100%
+bookwyrm/forms/widgets.py                                   29      0   100%
+bookwyrm/imagegenerators.py                                 62      0   100%
+bookwyrm/importers/__init__.py                               8      0   100%
+bookwyrm/importers/bookwyrm_import.py                       15      0   100%
+bookwyrm/importers/calibre_import.py                        10      0   100%
+bookwyrm/importers/goodreads_import.py                       8      0   100%
+bookwyrm/importers/importer.py                              89     20    78%
+bookwyrm/importers/importer_factory.py                      40      0   100%
+bookwyrm/importers/librarything_import.py                   21      0   100%
+bookwyrm/importers/openlibrary_import.py                     4      0   100%
+bookwyrm/importers/openreads_import.py                      35      2    94%
+bookwyrm/importers/storygraph_import.py                      3      0   100%
+bookwyrm/isbn/__init__.py                                    0      0   100%
+bookwyrm/isbn/isbn.py                                       87     14    84%
+bookwyrm/lists_stream.py                                   116     11    91%
+bookwyrm/management/commands/add_finna_connector.py         17      1    94%
+bookwyrm/management/commands/add_libris_connector.py        17      1    94%
+bookwyrm/management/commands/initdb.py                      46      1    98%
+bookwyrm/management/commands/populate_lists_streams.py      14      1    93%
+bookwyrm/management/commands/populate_streams.py            20      3    85%
+bookwyrm/management/commands/upgrade_series.py              34      1    97%
+bookwyrm/middleware/__init__.py                              6      0   100%
+bookwyrm/middleware/file_too_big.py                         13      3    77%
+bookwyrm/middleware/force_logout.py                          8      1    88%
+bookwyrm/middleware/ip_middleware.py                        12      2    83%
+bookwyrm/middleware/require_login.py                        16      0   100%
+bookwyrm/middleware/require_signed_get.py                   58     11    81%
+bookwyrm/middleware/timezone_middleware.py                  10      0   100%
+bookwyrm/models/__init__.py                                 37      0   100%
+bookwyrm/models/activitypub_mixin.py                       297     32    89%
+bookwyrm/models/announcement.py                             19      0   100%
+bookwyrm/models/annual_goal.py                              29      3    90%
+bookwyrm/models/antispam.py                                 77      3    96%
+bookwyrm/models/attachment.py                               14      0   100%
+bookwyrm/models/author.py                                   42      1    98%
+bookwyrm/models/base_model.py                               99      5    95%
+bookwyrm/models/book.py                                    443     46    90%
+bookwyrm/models/bookwyrm_export_job.py                     157     25    84%
+bookwyrm/models/bookwyrm_import_job.py                     370    119    68%
+bookwyrm/models/connector.py                                35      1    97%
+bookwyrm/models/favorite.py                                 18      0   100%
+bookwyrm/models/federated_server.py                         30      0   100%
+bookwyrm/models/fields.py                                  358     14    96%
+bookwyrm/models/group.py                                    63      5    92%
+bookwyrm/models/hashtag.py                                  10      1    90%
+bookwyrm/models/housekeeping.py                            130     30    77%
+bookwyrm/models/import_job.py                              265     50    81%
+bookwyrm/models/job.py                                     117     29    75%
+bookwyrm/models/link.py                                     47      1    98%
+bookwyrm/models/list.py                                    165      9    95%
+bookwyrm/models/move.py                                     27      2    93%
+bookwyrm/models/notification.py                            177      6    97%
+bookwyrm/models/readthrough.py                              41      0   100%
+bookwyrm/models/relationship.py                             94      3    97%
+bookwyrm/models/report.py                                   75      1    99%
+bookwyrm/models/session.py                                  26      0   100%
+bookwyrm/models/shelf.py                                    76      2    97%
+bookwyrm/models/site.py                                    165     17    90%
+bookwyrm/models/status.py                                  284     15    95%
+bookwyrm/models/user.py                                    332     24    93%
+bookwyrm/models/user_upload.py                              17      0   100%
+bookwyrm/preview_images.py                                 321     50    84%
+bookwyrm/readwise.py                                        51      8    84%
+bookwyrm/redis_store.py                                     55     11    80%
+bookwyrm/settings.py                                       162     40    75%
+bookwyrm/signatures.py                                      80      7    91%
+bookwyrm/status.py                                          12      0   100%
+bookwyrm/suggested_users.py                                133     33    75%
+bookwyrm/tasks.py                                           19      0   100%
+bookwyrm/telemetry/open_telemetry.py                        24     11    54%
+bookwyrm/templatetags/__init__.py                            0      0   100%
+bookwyrm/templatetags/book_display_tags.py                  32      3    91%
+bookwyrm/templatetags/celery_tags.py                        12      3    75%
+bookwyrm/templatetags/date_ext.py                           14      0   100%
+bookwyrm/templatetags/feed_page_tags.py                     17      1    94%
+bookwyrm/templatetags/group_tags.py                         12      0   100%
+bookwyrm/templatetags/interaction.py                        26      3    88%
+bookwyrm/templatetags/landing_page_tags.py                  15      0   100%
+bookwyrm/templatetags/layout.py                              6      0   100%
+bookwyrm/templatetags/list_page_tags.py                     12      0   100%
+bookwyrm/templatetags/markdown.py                            8      0   100%
+bookwyrm/templatetags/notification_page_tags.py             11      0   100%
+bookwyrm/templatetags/rating_tags.py                        16      0   100%
+bookwyrm/templatetags/shelf_tags.py                         36      0   100%
+bookwyrm/templatetags/stars.py                               5      1    80%
+bookwyrm/templatetags/status_display.py                     48      4    92%
+bookwyrm/templatetags/user_page_tags.py                      8      1    88%
+bookwyrm/templatetags/utilities.py                         110     20    82%
+bookwyrm/tests/__init__.py                                   1      0   100%
+bookwyrm/tests/activitypub/__init__.py                       1      0   100%
+bookwyrm/tests/activitystreams/__init__.py                   1      0   100%
+bookwyrm/tests/conftest.py                                   7      0   100%
+bookwyrm/tests/connectors/__init__.py                        1      0   100%
+bookwyrm/tests/importers/__init__.py                         1      0   100%
+bookwyrm/tests/lists_stream/__init__.py                      1      0   100%
+bookwyrm/tests/management/__init__.py                        1      0   100%
+bookwyrm/tests/models/__init__.py                            1      0   100%
+bookwyrm/tests/templatetags/__init__.py                      1      0   100%
+bookwyrm/tests/validate_html.py                             20      2    90%
+bookwyrm/tests/views/__init__.py                             1      0   100%
+bookwyrm/tests/views/admin/__init__.py                       1      0   100%
+bookwyrm/tests/views/books/__init__.py                       1      0   100%
+bookwyrm/tests/views/imports/__init__.py                     1      0   100%
+bookwyrm/tests/views/inbox/__init__.py                       1      0   100%
+bookwyrm/tests/views/landing/__init__.py                     1      0   100%
+bookwyrm/tests/views/lists/__init__.py                       1      0   100%
+bookwyrm/tests/views/preferences/__init__.py                 1      0   100%
+bookwyrm/tests/views/shelf/__init__.py                       1      0   100%
+bookwyrm/thumbnail_generation.py                             7      1    86%
+bookwyrm/urls.py                                            19      0   100%
+bookwyrm/utils/__init__.py                                   1      0   100%
+bookwyrm/utils/block_books.py                               18      5    72%
+bookwyrm/utils/cache.py                                      8      0   100%
+bookwyrm/utils/db.py                                         6      0   100%
+bookwyrm/utils/images.py                                    35      7    80%
+bookwyrm/utils/isni.py                                     111      6    95%
+bookwyrm/utils/log.py                                       10      1    90%
+bookwyrm/utils/partial_date.py                             126      3    98%
+bookwyrm/utils/regex.py                                     11      0   100%
+bookwyrm/utils/sanitizer.py                                  3      0   100%
+bookwyrm/utils/tar.py                                       29      4    86%
+bookwyrm/utils/validate.py                                   8      1    88%
+bookwyrm/views/__init__.py                                  92      0   100%
+bookwyrm/views/admin/__init__.py                             0      0   100%
+bookwyrm/views/admin/announcements.py                       53      7    87%
+bookwyrm/views/admin/automod.py                             60      9    85%
+bookwyrm/views/admin/celery_status.py                       62     26    58%
+bookwyrm/views/admin/connectors.py                          45      3    93%
+bookwyrm/views/admin/dashboard.py                           81     10    88%
+bookwyrm/views/admin/email_blocklist.py                     26      1    96%
+bookwyrm/views/admin/email_config.py                        38     20    47%
+bookwyrm/views/admin/federation.py                          99     12    88%
+bookwyrm/views/admin/federation_settings.py                 21     11    48%
+bookwyrm/views/admin/files_maintenance.py                   96     16    83%
+bookwyrm/views/admin/imports.py                             84     33    61%
+bookwyrm/views/admin/invite.py                             100      6    94%
+bookwyrm/views/admin/ip_blocklist.py                        26      1    96%
+bookwyrm/views/admin/link_domains.py                        33      0   100%
+bookwyrm/views/admin/redis.py                               48     13    73%
+bookwyrm/views/admin/reports.py                             86      5    94%
+bookwyrm/views/admin/schedule.py                            18      7    61%
+bookwyrm/views/admin/site.py                                53     11    79%
+bookwyrm/views/admin/themes.py                              40      3    92%
+bookwyrm/views/admin/user_admin.py                          87     12    86%
+bookwyrm/views/annual_summary.py                           103      8    92%
+bookwyrm/views/author.py                                    51      0   100%
+bookwyrm/views/books/__init__.py                             0      0   100%
+bookwyrm/views/books/books.py                              106      4    96%
+bookwyrm/views/books/edit_book.py                          279     97    65%
+bookwyrm/views/books/editions.py                            61      1    98%
+bookwyrm/views/books/links.py                               62      5    92%
+bookwyrm/views/books/series.py                              67      9    87%
+bookwyrm/views/directory.py                                 35      7    80%
+bookwyrm/views/discover.py                                  16      0   100%
+bookwyrm/views/feed.py                                     101      5    95%
+bookwyrm/views/follow.py                                   126     21    83%
+bookwyrm/views/get_started.py                               56      2    96%
+bookwyrm/views/goal.py                                      46      6    87%
+bookwyrm/views/group.py                                    145     13    91%
+bookwyrm/views/hashtag.py                                   17      1    94%
+bookwyrm/views/helpers.py                                  157     16    90%
+bookwyrm/views/imports/__init__.py                           0      0   100%
+bookwyrm/views/imports/import_data.py                      102     12    88%
+bookwyrm/views/imports/import_status.py                     73     20    73%
+bookwyrm/views/imports/manually_review.py                   39      1    97%
+bookwyrm/views/imports/troubleshoot.py                      29      1    97%
+bookwyrm/views/imports/user_troubleshoot.py                 29     13    55%
+bookwyrm/views/inbox.py                                     92      5    95%
+bookwyrm/views/interaction.py                               56      8    86%
+bookwyrm/views/isbn.py                                      18      0   100%
+bookwyrm/views/landing/__init__.py                           0      0   100%
+bookwyrm/views/landing/about.py                             24      0   100%
+bookwyrm/views/landing/landing.py                           19      1    95%
+bookwyrm/views/landing/login.py                             80      9    89%
+bookwyrm/views/landing/password.py                          76      6    92%
+bookwyrm/views/landing/register.py                          87      4    95%
+bookwyrm/views/list/curate.py                               30      0   100%
+bookwyrm/views/list/embed.py                                37      4    89%
+bookwyrm/views/list/list.py                                195     26    87%
+bookwyrm/views/list/list_item.py                            25      2    92%
+bookwyrm/views/list/lists.py                                51      6    88%
+bookwyrm/views/mixins.py                                    14      1    93%
+bookwyrm/views/notifications.py                             18      1    94%
+bookwyrm/views/outbox.py                                    12      0   100%
+bookwyrm/views/permission_denied.py                          7      1    86%
+bookwyrm/views/preferences/__init__.py                       0      0   100%
+bookwyrm/views/preferences/block.py                         24      0   100%
+bookwyrm/views/preferences/books.py                         23      0   100%
+bookwyrm/views/preferences/change_password.py               27      0   100%
+bookwyrm/views/preferences/delete_user.py                   47      7    85%
+bookwyrm/views/preferences/edit_user.py                     45      2    96%
+bookwyrm/views/preferences/export.py                       119     25    79%
+bookwyrm/views/preferences/move_user.py                     65     34    48%
+bookwyrm/views/preferences/security.py                     129     10    92%
+bookwyrm/views/reading.py                                  105     20    81%
+bookwyrm/views/relationships.py                             29      1    97%
+bookwyrm/views/report.py                                    31      1    97%
+bookwyrm/views/rss_feed.py                                 118      8    93%
+bookwyrm/views/search.py                                   112     16    86%
+bookwyrm/views/server_error.py                               3      1    67%
+bookwyrm/views/setup.py                                     57      7    88%
+bookwyrm/views/shelf/__init__.py                             0      0   100%
+bookwyrm/views/shelf/shelf.py                               79      1    99%
+bookwyrm/views/shelf/shelf_actions.py                       51      6    88%
+bookwyrm/views/status.py                                   218     16    93%
+bookwyrm/views/suggestion_list.py                           97     10    90%
+bookwyrm/views/updates.py                                   22      2    91%
+bookwyrm/views/user.py                                      66      4    94%
+bookwyrm/views/user_upload.py                               54      4    93%
+bookwyrm/views/wellknown.py                                 57      5    91%
+bookwyrm/wsgi.py                                             6      6     0%
+----------------------------------------------------------------------------
+TOTAL                                                    14776   1840    88%
+Coverage XML written to file docs/a7-green-coverage.xml
+
+=========== 1395 passed, 1 xfailed, 41 warnings in 231.95s (0:03:51) ===========
