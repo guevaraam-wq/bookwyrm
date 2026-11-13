@@ -1,0 +1,7 @@
+ Container dev-wyrm-db-1 Running 
+ Container dev-wyrm-redis_activity-1 Running 
+ Container dev-wyrm-db-1 Waiting 
+ Container dev-wyrm-db-1 Healthy 
+ Container dev-wyrm-web-run-46efc3148eb9 Creating 
+ Container dev-wyrm-web-run-46efc3148eb9 Created 
+All checks passed!

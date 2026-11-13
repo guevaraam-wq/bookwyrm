@@ -1,0 +1,12 @@
+RED commit has no production fix: PASS
+Tests unchanged between GREEN and REFACTOR: PASS
+Original coverage report unchanged: PASS
+AGENTS.md preserved (SHA-256): PASS
+docs/vulnerability-scan.json preserved (SHA-256): PASS
+a7-baseline-verified.xml: test modules excluded; 20 helper files retained (43/45 statements); branches-valid=0
+a7-green-coverage.xml: test modules excluded; 20 helper files retained (43/45 statements); branches-valid=0
+a7-final-coverage.xml: test modules excluded; 20 helper files retained (43/45 statements); branches-valid=0
+088310410 A7-Tests: Characterize import, login, and Redis boundaries with verified coverage
+0e41c9d42 A7-Red: Reproduce RedisStore losing its capacity boundary entry
+06c199bc2 A7-Green: Retain the configured RedisStore capacity in all insert paths
+ef8ce9a3e A7-Refactor: Centralize RedisStore trimming without changing tests
