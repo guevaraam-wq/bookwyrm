@@ -20,6 +20,12 @@ class RedisStore(ABC):
         """the object and rank"""
         return {obj.id: self.get_rank(obj)}
 
+    def _trim_store(self, pipeline, store):
+        """Queue removal of entries below the configured capacity."""
+        if self.max_length:
+            # Redis rank endpoints are inclusive; retain the last max_length entries.
+            pipeline.zremrangebyrank(store, 0, -self.max_length - 1)
+
     def add_object_to_stores(self, obj, stores, execute=True):
         """add an object to a given set of stores"""
         value = self.get_value(obj)
@@ -29,8 +35,7 @@ class RedisStore(ABC):
             # add the status to the feed
             pipeline.zadd(store, value)
             # trim the store
-            if self.max_length:
-                pipeline.zremrangebyrank(store, 0, -1 * self.max_length - 1)
+            self._trim_store(pipeline, store)
         if not execute:
             return pipeline
         # and go!
@@ -54,8 +59,8 @@ class RedisStore(ABC):
         max_length_objs = objs[: self.max_length]
         for obj in max_length_objs:
             pipeline.zadd(store, self.get_value(obj))
-        if max_length_objs and self.max_length:
-            pipeline.zremrangebyrank(store, 0, -1 * self.max_length - 1)
+        if max_length_objs:
+            self._trim_store(pipeline, store)
         pipeline.execute()
 
     def bulk_remove_objects_from_store(self, objs: QuerySet[Any], store: str) -> None:
@@ -78,8 +83,8 @@ class RedisStore(ABC):
             pipeline.zadd(store, self.get_value(obj))
 
         # only trim the store if objects were added
-        if queryset.exists() and self.max_length:
-            pipeline.zremrangebyrank(store, 0, -1 * self.max_length - 1)
+        if queryset.exists():
+            self._trim_store(pipeline, store)
         pipeline.execute()
 
     @abstractmethod
