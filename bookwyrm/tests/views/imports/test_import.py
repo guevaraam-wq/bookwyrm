@@ -178,3 +178,132 @@ class ImportViews(TestCase):
         )
         result = views.imports.import_data.get_average_import_time()
         self.assertEqual(result, 4 * 60 * 60)
+    def test_import_status_other_user_denied(self):
+        """Users cannot view another user's import status."""
+        from django.core.exceptions import PermissionDenied
+
+        other_user = models.User.objects.create_user(
+            "other@local.com",
+            "other@mouse.mouse",
+            "password",
+            local=True,
+            localname="other",
+        )
+
+        import_job = models.ImportJob.objects.create(
+            user=other_user,
+            mappings={},
+        )
+
+        request = self.factory.get("")
+        request.user = self.local_user
+
+        with self.assertRaises(PermissionDenied):
+            views.ImportStatus.as_view()(request, import_job.id)
+    def test_retry_item_other_user_denied(self):
+        """Users cannot retry another user's import item."""
+        from django.http import Http404
+
+        other_user = models.User.objects.create_user(
+            "other@local.com",
+            "other@mouse.mouse",
+            "password",
+            local=True,
+            localname="other",
+        )
+
+        job = models.ImportJob.objects.create(
+            user=other_user,
+            mappings={},
+        )
+
+        item = models.ImportItem.objects.create(
+            index=0,
+            job=job,
+            fail_reason="no match",
+            data={},
+            normalized_data={},
+        )
+
+        request = self.factory.post("")
+        request.user = self.local_user
+
+        with patch("bookwyrm.models.import_job.import_item_task.delay") as mock:
+            with self.assertRaises(Http404):
+                views.retry_item(request, job.id, item.id)
+
+        mock.assert_not_called()
+    def test_stop_import_other_user_denied(self):
+        """Users cannot stop another user's import."""
+        from django.http import Http404
+
+        other_user = models.User.objects.create_user(
+            "other@local.com",
+            "other@mouse.mouse",
+            "password",
+            local=True,
+            localname="other",
+        )
+
+        job = models.ImportJob.objects.create(
+            user=other_user,
+            mappings={},
+        )
+
+        request = self.factory.post("")
+        request.user = self.local_user
+
+        with patch.object(job.__class__, "stop_job") as mock:
+            with self.assertRaises(Http404):
+                views.stop_import(request, job.id)
+
+        mock.assert_not_called()
+    def test_import_status_post_other_user_denied(self):
+        """Users cannot modify another user's import."""
+        from django.core.exceptions import PermissionDenied
+
+        other_user = models.User.objects.create_user(
+            "other@local.com",
+            "other@mouse.mouse",
+            "password",
+            local=True,
+            localname="other",
+        )
+
+        job = models.ImportJob.objects.create(
+            user=other_user,
+            mappings={},
+        )
+
+        request = self.factory.post("")
+        request.user = self.local_user
+
+        with patch(
+            "bookwyrm.importers.goodreads_import.GoodreadsImporter.update_legacy_job"
+        ) as mock:
+            with self.assertRaises(PermissionDenied):
+                views.ImportStatus.as_view()(request, job.id)
+
+        mock.assert_not_called()
+    def test_user_import_status_other_user_denied(self):
+        """Users cannot view another user's account-data import."""
+        from django.core.exceptions import PermissionDenied
+
+        other_user = models.User.objects.create_user(
+            "other@local.com",
+            "other@mouse.mouse",
+            "password",
+            local=True,
+            localname="other",
+        )
+
+        job = models.BookwyrmImportJob.objects.create(
+    user=other_user,
+    required=[],
+)
+
+        request = self.factory.get("")
+        request.user = self.local_user
+
+        with self.assertRaises(PermissionDenied):
+            views.UserImportStatus.as_view()(request, job.id)
