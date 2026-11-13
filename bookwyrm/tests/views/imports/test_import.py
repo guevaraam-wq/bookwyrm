@@ -5,6 +5,7 @@ import pathlib
 from unittest.mock import patch
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.http import Http404
 from django.template.response import TemplateResponse
 from django.test import TestCase
 from django.test.client import RequestFactory
@@ -307,3 +308,20 @@ class ImportViews(TestCase):
 
         with self.assertRaises(PermissionDenied):
             views.UserImportStatus.as_view()(request, job.id)
+
+    def test_import_status_missing_job_returns_not_found(self):
+        """An unknown job id is rejected at the lookup boundary."""
+        request = self.factory.get("")
+        request.user = self.local_user
+        with self.assertRaises(Http404):
+            views.ImportStatus.as_view()(request, 0)
+
+    def test_retry_item_get_does_not_schedule_task(self):
+        """Retrying is a mutation and requires POST, even for an owner."""
+        request = self.factory.get("")
+        request.user = self.local_user
+        with patch("bookwyrm.models.import_job.import_item_task.delay") as task:
+            response = views.retry_item(request, 0, 0)
+        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.headers["Allow"], "POST")
+        task.assert_not_called()

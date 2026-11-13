@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
+from redis.exceptions import ConnectionError as RedisConnectionError
 
 from bookwyrm.redis_store import RedisStore
 
@@ -59,11 +60,22 @@ def test_add_object_when_redis_fails_propagates_error(store):
     """A Redis execution failure is propagated to the caller."""
     obj = SimpleNamespace(id=42, rank=100)
     pipeline = MagicMock()
-    pipeline.execute.side_effect = ConnectionError("Redis unavailable")
+    pipeline.execute.side_effect = RedisConnectionError("Redis unavailable")
 
     with patch("bookwyrm.redis_store.r.pipeline", return_value=pipeline):
-        with pytest.raises(ConnectionError, match="Redis unavailable"):
+        with pytest.raises(RedisConnectionError, match="Redis unavailable"):
             store.add_object_to_stores(obj, ["feed-a"])
 
     pipeline.zadd.assert_called_once_with("feed-a", {42: 100})
     pipeline.execute.assert_called_once_with()
+
+
+def test_add_object_deferred_returns_pipeline_without_executing(store):
+    """Callers can queue writes and execute the returned pipeline later."""
+    obj = SimpleNamespace(id=42, rank=100)
+    pipeline = MagicMock()
+    with patch("bookwyrm.redis_store.r.pipeline", return_value=pipeline):
+        result = store.add_object_to_stores(obj, ["feed-a"], execute=False)
+    assert result is pipeline
+    pipeline.zadd.assert_called_once_with("feed-a", {42: 100})
+    pipeline.execute.assert_not_called()
