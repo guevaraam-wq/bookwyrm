@@ -1,0 +1,621 @@
++ case "$CMD" in
++ rundev pytest --no-cov-on-fail bookwyrm/tests/test_redis_store.py bookwyrm/tests/test_redis_store_capacity.py --no-cov -v
++ docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env --env-file .env.dev -f docker-compose.yml -f docker-compose.dev.yml --env-file .env --env-file .env.dev run -e DEBUG=true --rm web pytest --no-cov-on-fail bookwyrm/tests/test_redis_store.py bookwyrm/tests/test_redis_store_capacity.py --no-cov -v
+ Container dev-wyrm-redis_activity-1 Running 
+ Container dev-wyrm-db-1 Running 
+ Container dev-wyrm-db-1 Waiting 
+ Container dev-wyrm-db-1 Healthy 
+ Container dev-wyrm-web-run-9d78db73d4f0 Creating 
+ Container dev-wyrm-web-run-9d78db73d4f0 Created 
+============================= test session starts ==============================
+platform linux -- Python 3.11.16, pytest-9.0.3, pluggy-1.6.0 -- /venv/bin/python
+cachedir: .pytest_cache
+django: version: 5.2.16, settings: bookwyrm.settings (from ini)
+rootdir: /app
+configfile: pytest.ini (WARNING: ignoring pytest config in pyproject.toml!)
+plugins: django-4.8.0, env-1.1.3, cov-5.0.0, xdist-3.5.0
+collecting ... collected 22 items
+
+bookwyrm/tests/test_redis_store.py::test_add_object_when_stores_exist_adds_and_trims_each_store FAILED [  4%]
+bookwyrm/tests/test_redis_store.py::test_add_object_when_stores_empty_executes_empty_pipeline PASSED [  9%]
+bookwyrm/tests/test_redis_store.py::test_add_object_when_redis_fails_propagates_error PASSED [ 13%]
+bookwyrm/tests/test_redis_store.py::test_add_object_deferred_returns_pipeline_without_executing PASSED [ 18%]
+bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[below-1-single] PASSED [ 22%]
+bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[below-1-bulk] PASSED [ 27%]
+bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[below-1-populate] PASSED [ 31%]
+bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[below-10-single] PASSED [ 36%]
+bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[below-10-bulk] PASSED [ 40%]
+bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[below-10-populate] PASSED [ 45%]
+bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[at-1-single] FAILED [ 50%]
+bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[at-1-bulk] FAILED [ 54%]
+bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[at-1-populate] FAILED [ 59%]
+bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[at-10-single] FAILED [ 63%]
+bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[at-10-bulk] FAILED [ 68%]
+bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[at-10-populate] FAILED [ 72%]
+bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[above-1-single] FAILED [ 77%]
+bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[above-1-bulk] FAILED [ 81%]
+bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[above-1-populate] FAILED [ 86%]
+bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[above-10-single] FAILED [ 90%]
+bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[above-10-bulk] FAILED [ 95%]
+bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[above-10-populate] FAILED [100%]
+
+=================================== FAILURES ===================================
+_________ test_add_object_when_stores_exist_adds_and_trims_each_store __________
+
+store = <bookwyrm.tests.test_redis_store.ExampleStore object at 0xffffade80750>
+
+    def test_add_object_when_stores_exist_adds_and_trims_each_store(store):
+        """Adding an object queues a ranked insert and trim for each store."""
+        obj = SimpleNamespace(id=42, rank=100)
+        pipeline = MagicMock()
+    
+        with patch("bookwyrm.redis_store.r.pipeline", return_value=pipeline):
+            store.add_object_to_stores(obj, ["feed-a", "feed-b"])
+    
+        pipeline.zadd.assert_any_call("feed-a", {42: 100})
+        pipeline.zadd.assert_any_call("feed-b", {42: 100})
+>       pipeline.zremrangebyrank.assert_any_call("feed-a", 0, -11)
+
+bookwyrm/tests/test_redis_store.py:39: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock name='mock.zremrangebyrank' id='281473600348176'>
+args = ('feed-a', 0, -11), kwargs = {}, expected = call('feed-a', 0, -11)
+cause = None, actual = [call('feed-a', 0, -10), call('feed-b', 0, -10)]
+expected_string = "zremrangebyrank('feed-a', 0, -11)"
+
+    def assert_any_call(self, /, *args, **kwargs):
+        """assert the mock has been called with the specified arguments.
+    
+        The assert passes if the mock has *ever* been called, unlike
+        `assert_called_with` and `assert_called_once_with` that only pass if
+        the call is the most recent one."""
+        expected = self._call_matcher(_Call((args, kwargs), two=True))
+        cause = expected if isinstance(expected, Exception) else None
+        actual = [self._call_matcher(c) for c in self.call_args_list]
+        if cause or expected not in _AnyComparer(actual):
+            expected_string = self._format_mock_call_signature(args, kwargs)
+>           raise AssertionError(
+                '%s call not found' % expected_string
+            ) from cause
+E           AssertionError: zremrangebyrank('feed-a', 0, -11) call not found
+
+/usr/local/lib/python3.11/unittest/mock.py:1010: AssertionError
+_______ test_store_retains_capacity_highest_ranked_entries[at-1-single] ________
+
+method = 'single', capacity = 1, offset = 0
+
+    @pytest.mark.parametrize("method", ["single", "bulk", "populate"])
+    @pytest.mark.parametrize("capacity", [1, 10])
+    @pytest.mark.parametrize("offset", [-1, 0, 1], ids=["below", "at", "above"])
+    def test_store_retains_capacity_highest_ranked_entries(method, capacity, offset):
+        """Retain all entries up to capacity and discard only the lowest overflow."""
+        store = CapacityStore()
+        store.max_length = capacity
+        count = capacity + offset
+        # Bulk/population querysets supply the highest-ranked objects first.
+        objects = [SimpleNamespace(id=i, rank=i) for i in range(count, 0, -1)]
+        queryset = MagicMock()
+        queryset.__getitem__.side_effect = objects.__getitem__
+        queryset.exists.return_value = bool(objects)
+        store.objects = queryset
+    
+        with patch("bookwyrm.redis_store.r", fakeredis.FakeRedis()):
+            if method == "single":
+                for obj in objects:
+                    store.add_object_to_stores(obj, ["feed"])
+            elif method == "bulk":
+                store.bulk_add_objects_to_store(queryset, "feed")
+            else:
+                store.populate_store("feed")
+    
+            retained = store.get_store("feed")
+    
+        expected = [str(obj.id).encode("ascii") for obj in objects[:capacity]]
+>       assert retained == expected
+E       AssertionError: assert [] == [b'1']
+E         
+E         Right contains one more item: b'1'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     b'1',
+E         - ]
+
+bookwyrm/tests/test_redis_store_capacity.py:49: AssertionError
+________ test_store_retains_capacity_highest_ranked_entries[at-1-bulk] _________
+
+method = 'bulk', capacity = 1, offset = 0
+
+    @pytest.mark.parametrize("method", ["single", "bulk", "populate"])
+    @pytest.mark.parametrize("capacity", [1, 10])
+    @pytest.mark.parametrize("offset", [-1, 0, 1], ids=["below", "at", "above"])
+    def test_store_retains_capacity_highest_ranked_entries(method, capacity, offset):
+        """Retain all entries up to capacity and discard only the lowest overflow."""
+        store = CapacityStore()
+        store.max_length = capacity
+        count = capacity + offset
+        # Bulk/population querysets supply the highest-ranked objects first.
+        objects = [SimpleNamespace(id=i, rank=i) for i in range(count, 0, -1)]
+        queryset = MagicMock()
+        queryset.__getitem__.side_effect = objects.__getitem__
+        queryset.exists.return_value = bool(objects)
+        store.objects = queryset
+    
+        with patch("bookwyrm.redis_store.r", fakeredis.FakeRedis()):
+            if method == "single":
+                for obj in objects:
+                    store.add_object_to_stores(obj, ["feed"])
+            elif method == "bulk":
+                store.bulk_add_objects_to_store(queryset, "feed")
+            else:
+                store.populate_store("feed")
+    
+            retained = store.get_store("feed")
+    
+        expected = [str(obj.id).encode("ascii") for obj in objects[:capacity]]
+>       assert retained == expected
+E       AssertionError: assert [] == [b'1']
+E         
+E         Right contains one more item: b'1'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     b'1',
+E         - ]
+
+bookwyrm/tests/test_redis_store_capacity.py:49: AssertionError
+______ test_store_retains_capacity_highest_ranked_entries[at-1-populate] _______
+
+method = 'populate', capacity = 1, offset = 0
+
+    @pytest.mark.parametrize("method", ["single", "bulk", "populate"])
+    @pytest.mark.parametrize("capacity", [1, 10])
+    @pytest.mark.parametrize("offset", [-1, 0, 1], ids=["below", "at", "above"])
+    def test_store_retains_capacity_highest_ranked_entries(method, capacity, offset):
+        """Retain all entries up to capacity and discard only the lowest overflow."""
+        store = CapacityStore()
+        store.max_length = capacity
+        count = capacity + offset
+        # Bulk/population querysets supply the highest-ranked objects first.
+        objects = [SimpleNamespace(id=i, rank=i) for i in range(count, 0, -1)]
+        queryset = MagicMock()
+        queryset.__getitem__.side_effect = objects.__getitem__
+        queryset.exists.return_value = bool(objects)
+        store.objects = queryset
+    
+        with patch("bookwyrm.redis_store.r", fakeredis.FakeRedis()):
+            if method == "single":
+                for obj in objects:
+                    store.add_object_to_stores(obj, ["feed"])
+            elif method == "bulk":
+                store.bulk_add_objects_to_store(queryset, "feed")
+            else:
+                store.populate_store("feed")
+    
+            retained = store.get_store("feed")
+    
+        expected = [str(obj.id).encode("ascii") for obj in objects[:capacity]]
+>       assert retained == expected
+E       AssertionError: assert [] == [b'1']
+E         
+E         Right contains one more item: b'1'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     b'1',
+E         - ]
+
+bookwyrm/tests/test_redis_store_capacity.py:49: AssertionError
+_______ test_store_retains_capacity_highest_ranked_entries[at-10-single] _______
+
+method = 'single', capacity = 10, offset = 0
+
+    @pytest.mark.parametrize("method", ["single", "bulk", "populate"])
+    @pytest.mark.parametrize("capacity", [1, 10])
+    @pytest.mark.parametrize("offset", [-1, 0, 1], ids=["below", "at", "above"])
+    def test_store_retains_capacity_highest_ranked_entries(method, capacity, offset):
+        """Retain all entries up to capacity and discard only the lowest overflow."""
+        store = CapacityStore()
+        store.max_length = capacity
+        count = capacity + offset
+        # Bulk/population querysets supply the highest-ranked objects first.
+        objects = [SimpleNamespace(id=i, rank=i) for i in range(count, 0, -1)]
+        queryset = MagicMock()
+        queryset.__getitem__.side_effect = objects.__getitem__
+        queryset.exists.return_value = bool(objects)
+        store.objects = queryset
+    
+        with patch("bookwyrm.redis_store.r", fakeredis.FakeRedis()):
+            if method == "single":
+                for obj in objects:
+                    store.add_object_to_stores(obj, ["feed"])
+            elif method == "bulk":
+                store.bulk_add_objects_to_store(queryset, "feed")
+            else:
+                store.populate_store("feed")
+    
+            retained = store.get_store("feed")
+    
+        expected = [str(obj.id).encode("ascii") for obj in objects[:capacity]]
+>       assert retained == expected
+E       AssertionError: assert [b'10', b'9',...6', b'5', ...] == [b'10', b'9',...6', b'5', ...]
+E         
+E         Right contains one more item: b'1'
+E         
+E         Full diff:
+E           [
+E               b'10',
+E               b'9',...
+E         
+E         ...Full output truncated (9 lines hidden), use '-vv' to show
+
+bookwyrm/tests/test_redis_store_capacity.py:49: AssertionError
+________ test_store_retains_capacity_highest_ranked_entries[at-10-bulk] ________
+
+method = 'bulk', capacity = 10, offset = 0
+
+    @pytest.mark.parametrize("method", ["single", "bulk", "populate"])
+    @pytest.mark.parametrize("capacity", [1, 10])
+    @pytest.mark.parametrize("offset", [-1, 0, 1], ids=["below", "at", "above"])
+    def test_store_retains_capacity_highest_ranked_entries(method, capacity, offset):
+        """Retain all entries up to capacity and discard only the lowest overflow."""
+        store = CapacityStore()
+        store.max_length = capacity
+        count = capacity + offset
+        # Bulk/population querysets supply the highest-ranked objects first.
+        objects = [SimpleNamespace(id=i, rank=i) for i in range(count, 0, -1)]
+        queryset = MagicMock()
+        queryset.__getitem__.side_effect = objects.__getitem__
+        queryset.exists.return_value = bool(objects)
+        store.objects = queryset
+    
+        with patch("bookwyrm.redis_store.r", fakeredis.FakeRedis()):
+            if method == "single":
+                for obj in objects:
+                    store.add_object_to_stores(obj, ["feed"])
+            elif method == "bulk":
+                store.bulk_add_objects_to_store(queryset, "feed")
+            else:
+                store.populate_store("feed")
+    
+            retained = store.get_store("feed")
+    
+        expected = [str(obj.id).encode("ascii") for obj in objects[:capacity]]
+>       assert retained == expected
+E       AssertionError: assert [b'10', b'9',...6', b'5', ...] == [b'10', b'9',...6', b'5', ...]
+E         
+E         Right contains one more item: b'1'
+E         
+E         Full diff:
+E           [
+E               b'10',
+E               b'9',...
+E         
+E         ...Full output truncated (9 lines hidden), use '-vv' to show
+
+bookwyrm/tests/test_redis_store_capacity.py:49: AssertionError
+______ test_store_retains_capacity_highest_ranked_entries[at-10-populate] ______
+
+method = 'populate', capacity = 10, offset = 0
+
+    @pytest.mark.parametrize("method", ["single", "bulk", "populate"])
+    @pytest.mark.parametrize("capacity", [1, 10])
+    @pytest.mark.parametrize("offset", [-1, 0, 1], ids=["below", "at", "above"])
+    def test_store_retains_capacity_highest_ranked_entries(method, capacity, offset):
+        """Retain all entries up to capacity and discard only the lowest overflow."""
+        store = CapacityStore()
+        store.max_length = capacity
+        count = capacity + offset
+        # Bulk/population querysets supply the highest-ranked objects first.
+        objects = [SimpleNamespace(id=i, rank=i) for i in range(count, 0, -1)]
+        queryset = MagicMock()
+        queryset.__getitem__.side_effect = objects.__getitem__
+        queryset.exists.return_value = bool(objects)
+        store.objects = queryset
+    
+        with patch("bookwyrm.redis_store.r", fakeredis.FakeRedis()):
+            if method == "single":
+                for obj in objects:
+                    store.add_object_to_stores(obj, ["feed"])
+            elif method == "bulk":
+                store.bulk_add_objects_to_store(queryset, "feed")
+            else:
+                store.populate_store("feed")
+    
+            retained = store.get_store("feed")
+    
+        expected = [str(obj.id).encode("ascii") for obj in objects[:capacity]]
+>       assert retained == expected
+E       AssertionError: assert [b'10', b'9',...6', b'5', ...] == [b'10', b'9',...6', b'5', ...]
+E         
+E         Right contains one more item: b'1'
+E         
+E         Full diff:
+E           [
+E               b'10',
+E               b'9',...
+E         
+E         ...Full output truncated (9 lines hidden), use '-vv' to show
+
+bookwyrm/tests/test_redis_store_capacity.py:49: AssertionError
+______ test_store_retains_capacity_highest_ranked_entries[above-1-single] ______
+
+method = 'single', capacity = 1, offset = 1
+
+    @pytest.mark.parametrize("method", ["single", "bulk", "populate"])
+    @pytest.mark.parametrize("capacity", [1, 10])
+    @pytest.mark.parametrize("offset", [-1, 0, 1], ids=["below", "at", "above"])
+    def test_store_retains_capacity_highest_ranked_entries(method, capacity, offset):
+        """Retain all entries up to capacity and discard only the lowest overflow."""
+        store = CapacityStore()
+        store.max_length = capacity
+        count = capacity + offset
+        # Bulk/population querysets supply the highest-ranked objects first.
+        objects = [SimpleNamespace(id=i, rank=i) for i in range(count, 0, -1)]
+        queryset = MagicMock()
+        queryset.__getitem__.side_effect = objects.__getitem__
+        queryset.exists.return_value = bool(objects)
+        store.objects = queryset
+    
+        with patch("bookwyrm.redis_store.r", fakeredis.FakeRedis()):
+            if method == "single":
+                for obj in objects:
+                    store.add_object_to_stores(obj, ["feed"])
+            elif method == "bulk":
+                store.bulk_add_objects_to_store(queryset, "feed")
+            else:
+                store.populate_store("feed")
+    
+            retained = store.get_store("feed")
+    
+        expected = [str(obj.id).encode("ascii") for obj in objects[:capacity]]
+>       assert retained == expected
+E       AssertionError: assert [] == [b'2']
+E         
+E         Right contains one more item: b'2'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     b'2',
+E         - ]
+
+bookwyrm/tests/test_redis_store_capacity.py:49: AssertionError
+_______ test_store_retains_capacity_highest_ranked_entries[above-1-bulk] _______
+
+method = 'bulk', capacity = 1, offset = 1
+
+    @pytest.mark.parametrize("method", ["single", "bulk", "populate"])
+    @pytest.mark.parametrize("capacity", [1, 10])
+    @pytest.mark.parametrize("offset", [-1, 0, 1], ids=["below", "at", "above"])
+    def test_store_retains_capacity_highest_ranked_entries(method, capacity, offset):
+        """Retain all entries up to capacity and discard only the lowest overflow."""
+        store = CapacityStore()
+        store.max_length = capacity
+        count = capacity + offset
+        # Bulk/population querysets supply the highest-ranked objects first.
+        objects = [SimpleNamespace(id=i, rank=i) for i in range(count, 0, -1)]
+        queryset = MagicMock()
+        queryset.__getitem__.side_effect = objects.__getitem__
+        queryset.exists.return_value = bool(objects)
+        store.objects = queryset
+    
+        with patch("bookwyrm.redis_store.r", fakeredis.FakeRedis()):
+            if method == "single":
+                for obj in objects:
+                    store.add_object_to_stores(obj, ["feed"])
+            elif method == "bulk":
+                store.bulk_add_objects_to_store(queryset, "feed")
+            else:
+                store.populate_store("feed")
+    
+            retained = store.get_store("feed")
+    
+        expected = [str(obj.id).encode("ascii") for obj in objects[:capacity]]
+>       assert retained == expected
+E       AssertionError: assert [] == [b'2']
+E         
+E         Right contains one more item: b'2'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     b'2',
+E         - ]
+
+bookwyrm/tests/test_redis_store_capacity.py:49: AssertionError
+_____ test_store_retains_capacity_highest_ranked_entries[above-1-populate] _____
+
+method = 'populate', capacity = 1, offset = 1
+
+    @pytest.mark.parametrize("method", ["single", "bulk", "populate"])
+    @pytest.mark.parametrize("capacity", [1, 10])
+    @pytest.mark.parametrize("offset", [-1, 0, 1], ids=["below", "at", "above"])
+    def test_store_retains_capacity_highest_ranked_entries(method, capacity, offset):
+        """Retain all entries up to capacity and discard only the lowest overflow."""
+        store = CapacityStore()
+        store.max_length = capacity
+        count = capacity + offset
+        # Bulk/population querysets supply the highest-ranked objects first.
+        objects = [SimpleNamespace(id=i, rank=i) for i in range(count, 0, -1)]
+        queryset = MagicMock()
+        queryset.__getitem__.side_effect = objects.__getitem__
+        queryset.exists.return_value = bool(objects)
+        store.objects = queryset
+    
+        with patch("bookwyrm.redis_store.r", fakeredis.FakeRedis()):
+            if method == "single":
+                for obj in objects:
+                    store.add_object_to_stores(obj, ["feed"])
+            elif method == "bulk":
+                store.bulk_add_objects_to_store(queryset, "feed")
+            else:
+                store.populate_store("feed")
+    
+            retained = store.get_store("feed")
+    
+        expected = [str(obj.id).encode("ascii") for obj in objects[:capacity]]
+>       assert retained == expected
+E       AssertionError: assert [] == [b'2']
+E         
+E         Right contains one more item: b'2'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     b'2',
+E         - ]
+
+bookwyrm/tests/test_redis_store_capacity.py:49: AssertionError
+_____ test_store_retains_capacity_highest_ranked_entries[above-10-single] ______
+
+method = 'single', capacity = 10, offset = 1
+
+    @pytest.mark.parametrize("method", ["single", "bulk", "populate"])
+    @pytest.mark.parametrize("capacity", [1, 10])
+    @pytest.mark.parametrize("offset", [-1, 0, 1], ids=["below", "at", "above"])
+    def test_store_retains_capacity_highest_ranked_entries(method, capacity, offset):
+        """Retain all entries up to capacity and discard only the lowest overflow."""
+        store = CapacityStore()
+        store.max_length = capacity
+        count = capacity + offset
+        # Bulk/population querysets supply the highest-ranked objects first.
+        objects = [SimpleNamespace(id=i, rank=i) for i in range(count, 0, -1)]
+        queryset = MagicMock()
+        queryset.__getitem__.side_effect = objects.__getitem__
+        queryset.exists.return_value = bool(objects)
+        store.objects = queryset
+    
+        with patch("bookwyrm.redis_store.r", fakeredis.FakeRedis()):
+            if method == "single":
+                for obj in objects:
+                    store.add_object_to_stores(obj, ["feed"])
+            elif method == "bulk":
+                store.bulk_add_objects_to_store(queryset, "feed")
+            else:
+                store.populate_store("feed")
+    
+            retained = store.get_store("feed")
+    
+        expected = [str(obj.id).encode("ascii") for obj in objects[:capacity]]
+>       assert retained == expected
+E       AssertionError: assert [b'11', b'10'...7', b'6', ...] == [b'11', b'10'...7', b'6', ...]
+E         
+E         Right contains one more item: b'2'
+E         
+E         Full diff:
+E           [
+E               b'11',
+E               b'10',...
+E         
+E         ...Full output truncated (9 lines hidden), use '-vv' to show
+
+bookwyrm/tests/test_redis_store_capacity.py:49: AssertionError
+______ test_store_retains_capacity_highest_ranked_entries[above-10-bulk] _______
+
+method = 'bulk', capacity = 10, offset = 1
+
+    @pytest.mark.parametrize("method", ["single", "bulk", "populate"])
+    @pytest.mark.parametrize("capacity", [1, 10])
+    @pytest.mark.parametrize("offset", [-1, 0, 1], ids=["below", "at", "above"])
+    def test_store_retains_capacity_highest_ranked_entries(method, capacity, offset):
+        """Retain all entries up to capacity and discard only the lowest overflow."""
+        store = CapacityStore()
+        store.max_length = capacity
+        count = capacity + offset
+        # Bulk/population querysets supply the highest-ranked objects first.
+        objects = [SimpleNamespace(id=i, rank=i) for i in range(count, 0, -1)]
+        queryset = MagicMock()
+        queryset.__getitem__.side_effect = objects.__getitem__
+        queryset.exists.return_value = bool(objects)
+        store.objects = queryset
+    
+        with patch("bookwyrm.redis_store.r", fakeredis.FakeRedis()):
+            if method == "single":
+                for obj in objects:
+                    store.add_object_to_stores(obj, ["feed"])
+            elif method == "bulk":
+                store.bulk_add_objects_to_store(queryset, "feed")
+            else:
+                store.populate_store("feed")
+    
+            retained = store.get_store("feed")
+    
+        expected = [str(obj.id).encode("ascii") for obj in objects[:capacity]]
+>       assert retained == expected
+E       AssertionError: assert [b'11', b'10'...7', b'6', ...] == [b'11', b'10'...7', b'6', ...]
+E         
+E         Right contains one more item: b'2'
+E         
+E         Full diff:
+E           [
+E               b'11',
+E               b'10',...
+E         
+E         ...Full output truncated (9 lines hidden), use '-vv' to show
+
+bookwyrm/tests/test_redis_store_capacity.py:49: AssertionError
+____ test_store_retains_capacity_highest_ranked_entries[above-10-populate] _____
+
+method = 'populate', capacity = 10, offset = 1
+
+    @pytest.mark.parametrize("method", ["single", "bulk", "populate"])
+    @pytest.mark.parametrize("capacity", [1, 10])
+    @pytest.mark.parametrize("offset", [-1, 0, 1], ids=["below", "at", "above"])
+    def test_store_retains_capacity_highest_ranked_entries(method, capacity, offset):
+        """Retain all entries up to capacity and discard only the lowest overflow."""
+        store = CapacityStore()
+        store.max_length = capacity
+        count = capacity + offset
+        # Bulk/population querysets supply the highest-ranked objects first.
+        objects = [SimpleNamespace(id=i, rank=i) for i in range(count, 0, -1)]
+        queryset = MagicMock()
+        queryset.__getitem__.side_effect = objects.__getitem__
+        queryset.exists.return_value = bool(objects)
+        store.objects = queryset
+    
+        with patch("bookwyrm.redis_store.r", fakeredis.FakeRedis()):
+            if method == "single":
+                for obj in objects:
+                    store.add_object_to_stores(obj, ["feed"])
+            elif method == "bulk":
+                store.bulk_add_objects_to_store(queryset, "feed")
+            else:
+                store.populate_store("feed")
+    
+            retained = store.get_store("feed")
+    
+        expected = [str(obj.id).encode("ascii") for obj in objects[:capacity]]
+>       assert retained == expected
+E       AssertionError: assert [b'11', b'10'...7', b'6', ...] == [b'11', b'10'...7', b'6', ...]
+E         
+E         Right contains one more item: b'2'
+E         
+E         Full diff:
+E           [
+E               b'11',
+E               b'10',...
+E         
+E         ...Full output truncated (9 lines hidden), use '-vv' to show
+
+bookwyrm/tests/test_redis_store_capacity.py:49: AssertionError
+=========================== short test summary info ============================
+FAILED bookwyrm/tests/test_redis_store.py::test_add_object_when_stores_exist_adds_and_trims_each_store
+FAILED bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[at-1-single]
+FAILED bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[at-1-bulk]
+FAILED bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[at-1-populate]
+FAILED bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[at-10-single]
+FAILED bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[at-10-bulk]
+FAILED bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[at-10-populate]
+FAILED bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[above-1-single]
+FAILED bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[above-1-bulk]
+FAILED bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[above-1-populate]
+FAILED bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[above-10-single]
+FAILED bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[above-10-bulk]
+FAILED bookwyrm/tests/test_redis_store_capacity.py::test_store_retains_capacity_highest_ranked_entries[above-10-populate]
+========================= 13 failed, 9 passed in 0.24s =========================
+

@@ -36,8 +36,8 @@ def test_add_object_when_stores_exist_adds_and_trims_each_store(store):
 
     pipeline.zadd.assert_any_call("feed-a", {42: 100})
     pipeline.zadd.assert_any_call("feed-b", {42: 100})
-    pipeline.zremrangebyrank.assert_any_call("feed-a", 0, -10)
-    pipeline.zremrangebyrank.assert_any_call("feed-b", 0, -10)
+    pipeline.zremrangebyrank.assert_any_call("feed-a", 0, -11)
+    pipeline.zremrangebyrank.assert_any_call("feed-b", 0, -11)
     assert pipeline.zadd.call_count == 2
     assert pipeline.zremrangebyrank.call_count == 2
     pipeline.execute.assert_called_once_with()
